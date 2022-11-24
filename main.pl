@@ -3,6 +3,9 @@
 :- use_module(library(lists)).
 %:- consult('probabilisticModel.pl').
 
+%%%%%%%%%%%%%%%%%
+%TEST
+%%%%%%%%%%%%%%%%%%
 test(L,P,C):- %L = 3 or 4
     startingLabelling(S),
     skplace(smallExample,S,L,(P,C)).
@@ -23,6 +26,7 @@ test2(AllLabellings):-
 
 startingLabelling(SL):-
     findall((DC,L),tag(DC,L),SL).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 skplace(AppId, Labelling, DLimit,(P,C)):-
     sKnife(AppId,Labelling,DLimit,P),
