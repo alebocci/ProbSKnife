@@ -45,9 +45,9 @@ calculateCost(AppId,LabelsChanging, Prob, StartingLinks,InitPartitions,Cost):-
 
 linksCost([(S1,S2,C,St1)|Slinks],NewLinks,Cost):-
     \+ member((S1,S2,C,St1),NewLinks),
-    linkCost(Slinks,NewLinks,SubCost),
+    linksCost(Slinks,NewLinks,SubCost),
     Cost is C + SubCost.
 linksCost([(S1,S2,C,St1)|Slinks],NewLinks,SubCost):-
     member((S1,S2,C,St1),NewLinks),
-    linkCost(Slinks,NewLinks,SubCost).
+    linksCost(Slinks,NewLinks,SubCost).
 linksCost([],_,0).

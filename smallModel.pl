@@ -6,7 +6,7 @@ software(north,
         [data1, data4, data6],
         [charact1],
         10,
-        ([hw1],[east,west,south])
+        ([],[east,west,south])
         ).
 
 software(east,

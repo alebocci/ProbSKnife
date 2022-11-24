@@ -3,15 +3,15 @@
 :- consult('utils.pl').
 :- consult('labellings.pl').
 :- consult('probabilisticModel.pl').
-:- consult('skLinkCostInt').
+%:- consult('skLinkCostInt').
 
-query(test(smallExample,3,1,Ps)).
+query(test(smallExample,3,1,P)).
 
-test(AppId,Limit,NLabelsChanging,(P,Np,C)):-
+test(AppId,Limit,NLabelsChanging,P,CombinationsProb):-
     combinations(NLabelsChanging,Combinations),
     combinationsProbability(Combinations,NLabelsChanging,CombinationsProb),
-    sKnife(AppId,Limit,P),
-    partitioningCost(AppId,P,Combinations,(Np,C)).
+    sKnife(AppId,Limit,P).
+    %partitioningCost(AppId,P,Combinations,(Np,C)).
 
 partitioningByCost(AppId,Limit,NLabelsChanging, (Np,C),Ps):-
     combinations(NLabelsChanging,Combinations),

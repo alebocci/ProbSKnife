@@ -12,29 +12,22 @@ labelSw(NewTags, Data,Characteristics, (MaxType,CharactSecType)):-
     characteristicsLabel(NewTags, Characteristics, ListOfCharactTypes),
     lowestType(ListOfCharactTypes, CharactSecType).
 
-%labels a list of data
-dataLabel(NewTags,[Data|Ds],[Type|Label]):-
-    \+ member((Data,_), NewTags),
-    tag(Data,Type),
-    dataLabel(NewTags, Ds, Label).
-dataLabel(NewTags,[Data|Ds],[Type|Label]):-
-    member((Data,Type), NewTags),
-    dataLabel(NewTags, Ds, Label).
+%tagData(Labelling,Data,Label)
+dataLabel(Labelling,[Data|Ds],[Type|Label]):-
+    member((Data,Type),Labelling),
+    dataLabel(Labelling,Ds, Label).
 dataLabel(_,[],[]).
-%labels a list of characteristics (empty list is labelled as highest type)
+%tagCharacteristics(Labelling,ListOfCharacteristics,ListOfCharacteristicsTypes)
 characteristicsLabel(_,[],[HighestType]):-
     highestType(HighestType).
-characteristicsLabel(NewTags,[Charact|Characteristics],[Type|ListOfCharactTypes]):-
-    \+ member((Charact,_),NewTags),
-    tag(Charact, Type),
-    characteristicsLabel(NewTags,Characteristics, ListOfCharactTypes).
-characteristicsLabel(NewTags,[Charact|Characteristics],[Type|ListOfCharactTypes]):-
-    member((Charact,Type),NewTags),
-    characteristicsLabel(NewTags,Characteristics, ListOfCharactTypes).
-characteristicsLabel(NewTags,[Charact|Characteristics],[HighestType|ListOfCharactTypes]):-
-    \+ tag(Charact, _), \+ member((Charact,_),NewTags),
+characteristicsLabel(Labelling,[Charact|Characteristics],[Type|ListOfCharactTypes]):-
+    member((Charact,Type),Labelling),
+    characteristicsLabel(Labelling,Characteristics, ListOfCharactTypes).
+characteristicsLabel(Labelling,[Charact|Characteristics],[HighestType|ListOfCharactTypes]):-
+    \+ member((Charact,_),Labelling),
     highestType(HighestType),
-    characteristicsLabel(NewTags, Characteristics, ListOfCharactTypes).
+    characteristicsLabel(Labelling,Characteristics, ListOfCharactTypes).
+
 
 %find highest type in a list
 highestType([T], T).
