@@ -1,5 +1,5 @@
 application(smallExample,[],[north, east, west, south]).
-application(smallExample2,[hw1],[north, east, west, south]).
+%application(smallExample2,[hw1],[north, east, west, south]).
 
 
 software(north,
@@ -30,37 +30,7 @@ software(south,
         ([],[north,east,west])
         ).
 
-software(a,
-        [data2, data3, data5],
-        [charact4],
-        10,
-        ([],[north,east,west])
-        ).
-software(b,
-        [data2, data3, data5],
-        [charact4],
-        10,
-        ([],[north,east,west])
-        ).
-software(c,
-        [data2, data3, data5],
-        [charact4],
-        10,
-        ([],[north,east,west])
-        ).
-software(d,
-        [data2, data3, data5],
-        [charact4],
-        10,
-        ([],[north,east,west])
-        ).
-software(e,
-        [data2, data3, data5],
-        [charact4],
-        10,
-        ([],[north,east,west])
-        ).
-hardware(hw1,[data1],[charact1],([],north)).
+hardware(hw1,[],[],([],north)).
 
 link(north,east).
 link(north,west).
