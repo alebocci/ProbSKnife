@@ -20,6 +20,7 @@ To try **ProbSKnife**:
 1. Download or clone this repository.
 
 2. Open a terminal in the project folder and run `python  .\main.py StartingPartitioning`.
+
    E.g. ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]'```
 
 3. The output is a table that resumes every reachable partitioning with its cost, its probability to be reached and the expected cost to reach it from the starting labelling.
