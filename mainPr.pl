@@ -6,19 +6,6 @@
 
 
 
-%%%%%%%%%%%%%%%%%
-%TEST
-%%%%%%%%%%%%%%%%%%
-%test(L,P,C):- %L = 3 or 4
-%    startingLabelling(S),
-%    skplace(smallExample,S,L,(P,C)).
-
-query(partitioningCost([((top, safe), [south, west, east, north])],
-            smallExample,
-            [charact1,charact2,charact3,charact4,data1,data2,data3,data4,data5,data6],
-            3,
-            RES)).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %'dream' predicate to give all the partioning with the cost
 %skplace(AppId, StartingLabelling, DLimit,(P,C)):-
@@ -32,7 +19,7 @@ partitioningCost(P0,AppId,DataCharList,DLimit,(Dn,Pmin,Cmin)):-
     futureCost(P0,AppId,DataCharList,DLimit,(Pmin,Cmin)).
 
 %Future cost C from P0 to Pi
-futureCost(P0,AppId,DataCharList,DLimit,(Pi,C)):-
+futureCost(P0,AppId,DataCharList,DLimit,(Labelling,Pi,C)):-
     labelling(DataCharList,Labelling),
     sKnife(AppId,Labelling,DLimit,Pi),
     cost(P0,Pi,C).
@@ -81,3 +68,37 @@ linksCost([(S1,S2,C,St1)|Slinks],NewLinks,SubCost):-
     member((S1,S2,C,St1),NewLinks),
     linksCost(Slinks,NewLinks,SubCost).
 linksCost([],_,0).
+
+%%%%%%%%%%%%%%%%%
+%TEST
+%%%%%%%%%%%%%%%%%%
+%test(L,P,C):- %L = 3 or 4
+%    startingLabelling(S),
+%    skplace(smallExample,S,L,(P,C)).
+/*
+query(partitioningCost([((top, safe), [south, west, east, north])],
+            smallExample,
+            [charact1,charact2,charact3,charact4,data1,data2,data4,data5],
+            3,
+            RES)).
+
+query(futureCost([((top, safe), [south, west]), ((top, safe), [east, north])],
+            smallExample,
+            [charact1,charact2,charact3,charact4,data2,data4,data5],
+            3,
+            RES)).
+
+test(P0,AppId,DataCharList,DLimit,(Pmin,Cmin)):- (
+    futureCost(P0,AppId,DataCharList,DLimit,(Labelling,Pi,C))
+) => Labelling / minCost((Pi,C),(Pmin,Cmin)).
+
+collect_minCost(CodeBlock, GroupBy, AggVar, AggRes):-
+    aggregate(minCost, AggVar, GroupBy,CodeBlock, (GroupBy, AggRes)).
+
+query(test([((top, safe), [south, west]), ((top, safe), [east, north])],
+            smallExample,
+            [charact1,charact2,charact3,charact4,data2,data4,data5],
+            3,
+            RES)).
+*/
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

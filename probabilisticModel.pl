@@ -9,20 +9,24 @@ dif(A,B):- A\=B.
 0.5::tagChange(charact3,top);0.5::tagChange(charact3,low).
 0.5::tagChange(charact4,top);0.5::tagChange(charact4,low).
 
-0.5::tagChange(data1,top);0.5::tagChange(data1,low).
+%0.5::tagChange(data1,top);0.5::tagChange(data1,low).
 0.5::tagChange(data2,top);0.5::tagChange(data2,low).
-0.5::tagChange(data3,top);0.5::tagChange(data3,low).
+%0.5::tagChange(data3,top);0.5::tagChange(data3,low).
 0.5::tagChange(data4,top);0.5::tagChange(data4,low).
 0.5::tagChange(data5,top);0.5::tagChange(data5,low).
-0.5::tagChange(data6,top);0.5::tagChange(data6,low).
+%0.5::tagChange(data6,top);0.5::tagChange(data6,low).
 
 %probability of a labelling is conjunction of al data\characterstic probability
 %Labelling = list (DataCharacterstic, Label) with unique DataCharacteristic
 %labelling(ListOfDataCharacterstic,Labelling)
+
 labelling([DC|DCs],[(DC,L)|Labelling]):-
     tagChange(DC,L),
     labelling(DCs,Labelling).
 labelling([],[]).
+
+
+%0.3::labelling(A,[(charact1, top), (charact2, top), (charact3, top), (charact4, top), (data2, top), (data4, top), (data5, top)]);0.5::labelling(A,[(charact1, top), (charact2, low), (charact3, top), (charact4, top),(data2, top), (data4, top), (data5, top)]);0.2::labelling(A,[(charact1, low), (charact2, low), (charact3, top), (charact4, top), (data2, top), (data4, top), (data5, top)]).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%% FULL MODEL NOT USED NOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
