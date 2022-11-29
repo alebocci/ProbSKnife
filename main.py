@@ -2,6 +2,7 @@ import subprocess
 from parse import *
 import pandas as pd
 import sys
+import os
 
 
 #Getting starting partitioning from arguments
@@ -16,6 +17,8 @@ with open('query.pl', 'w') as f:
 
 #Running problog program with query
 result = subprocess.run(['python', '-m','problog','mainPr.pl','query.pl','--combine'], stdout=subprocess.PIPE)
+
+os.remove('query.pl')
 
 ################# Parse Output phase ####################
 format_string = '{},{:d},([{}], {}, {:d})): {:f} '
@@ -57,6 +60,7 @@ sumProb = sumProb.reset_index()
 
 sumProb['expectedCost'] = sumProb['costs'] * sumProb['probabilities']
 expectedCost = sumProb['expectedCost'].sum()
+del sumProb['expectedCost']
 
 ####### Print result
 print('Starting from the partitionig '+Pstart+' all the reachable partitionings with cost and probability are:')
