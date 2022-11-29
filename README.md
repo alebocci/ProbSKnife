@@ -1,50 +1,66 @@
 
 
-<p><img align="left" width="100"> <h1>SKnife</h1></p>
-SKnife is a declarative prototype to partition multi-component applications employing information-flow security methodologies in order to exploit the Separation Kernel (SK) technology.
-SKnife first check the application is partitionable, i.e. do not leak data to untrusted hardware components, then finds the minimal eligible partitioning, the partitioning with the fewer number of SK domain that avoids data leak.
-To support the developers of non-partitionable applications, SKnife-Recommend allows finding labelling suggestions to relax the information-flow constraints in order to allow the partitioning.
+<p><img align="left" width="100"> <h1>Probabilistic SKnife</h1></p>
+Probabilstic SKnife (ProbSKnife) is a declarative prototype to evaluate the expected cost of a partitioning expecting to change the initial labelling. For every possible labelling it calculates:
+
+1. The probability of changing to the labelling
+
+2. The eligible partitionings that satisfy the labelling with the cost of migration from the starting partitionings
+
+To calculate the expected cost, **ProbSKnife** is launched from a Python script that parse the results, groups them by the labelling minimum and aggregates by eligible partionings.
 
 <br></br>
 ## Prerequisites
 
-Before using **SKnife** you need to install the latest stable release of [SWI-Prolog]
+Before using **ProbSKnife** You need to install [ProbLog2](https://dtai.cs.kuleuven.be/problog/index.html) and Python.
 ## Tutorial
 
-To try **SKnife** *Base* version:
+To try **ProbSKnife**:
 
 1. Download or clone this repository.
 
-2. Open a terminal in the project folder and run `swipl skplacer.pl`.
+2. Open a terminal in the project folder and run `python  .\main.py StartingPartitioning`.
 
-3. Inside the running program either run the query
-   ```prolog
-   :- sKnife(AppIdentifier, Partitioning).
-   ``` 
-   The output is the elegible partitioning for the application described in `model.pl` .
-    A Partitioning is composed by the list of domains that compose the partitioning. A domain is composed by the pair of labelling representing the *trust* and the *secrecy* of the hosted components, the list of the hosted components and the hardware requirements need by the software components.
-   E.g. of eligible placment
-   ```prolog
-   Partitioning = 
-   [((top, safe), [diskController, lockController, cameraController, Network2Controller, authentication, businessLogic, userConfig], 2, 3328, 640), 
-    ((medium, safe), [lightsController, thermostatController], 1, 1024, 0),
-    ((low, safe), [network1Controller], 1, 512, 0),  ((top, low), [aiLearning], 4, 2048, 0)]
+3. The output is a table that resumes every reachable partitioning with its cost, its probability to be reached and the expected cost to reach it from the starting labelling.
+
+   E.g. of a table record for the starting partitioning ```[((top, safe), [south, west]), ((top, safe), [east, north])]```
    ```
-   
-To try **SKnife** *Recommend* version:
-1. Download or clone this repository.
-
-2. Open a terminal in the project folder and run ``swipl skplacerReccomend.pl``.
-
-3. Inside the running program either run the query
-   ```prolog
-   :- sKnife(iotApp2, Suggestion, Partitioning).
-   ```  
-
-   The outputs are the suggestions and the relative eligible partitioning for the non-partitionable application ``iotApp2``
-   E.g. of suggestion
-    ```prolog
-   Suggestion = [(thermostatStatus, low),  (actuationCommands, low)],
-   Partitioning = [((top, safe), [diskController, lockController, cameraController, network2Controller, authentication, businessLogic, userConfig], 2, 3328, 640),  ((medium, afe), [lightsController, thermostatController], 1, 1024, 0),  ((low, safe), [network1Controller], 1, 512, 0),  ((top, low), [aiLearning], 4, 2048, 0)]1
+                                                                         partitionings  costs  probabilities  expectedCost
+   0                    [((low, safe), [south, west]), ((low, safe), [east, north])]      0       0.125000       0.00000
+   1                     [((low, safe), [south, west]), ((top, low), [east, north])]      0       0.031250       0.00000
+   2    [((low, safe), [south, west]), ((top, low), [east]), ((top, safe), [north])]     20       0.031250       0.62500
+   3                    [((low, safe), [south, west]), ((top, safe), [east, north])]      0       0.031250       0.00000
+   4    [((low, safe), [south, west]), ((top, safe), [east]), ((top, low), [north])]     20       0.031250       0.62500
+   5    [((top, low), [south, east]), ((top, safe), [west]), ((low, safe), [north])]     80       0.031250       2.50000
+   6                     [((top, low), [south, west]), ((low, safe), [east, north])]      0       0.031250       0.00000
+   7                      [((top, low), [south, west]), ((top, low), [east, north])]      0       0.023438       0.00000
+   8     [((top, low), [south, west]), ((top, low), [east]), ((low, safe), [north])]     20       0.031250       0.62500
+   9     [((top, low), [south, west]), ((top, low), [east]), ((top, safe), [north])]     20       0.023438       0.46875
+   10                    [((top, low), [south, west]), ((top, safe), [east, north])]      0       0.023438       0.00000
+   11   [((top, low), [south, west]), ((top, safe), [east]), ((low, safe), [north])]     20       0.031250       0.62500
+   12    [((top, low), [south, west]), ((top, safe), [east]), ((top, low), [north])]     20       0.023438       0.46875
+   13   [((top, low), [south]), ((top, safe), [west, east]), ((low, safe), [north])]     60       0.031250       1.87500
+   14    [((top, low), [south]), ((top, safe), [west, east]), ((top, low), [north])]     60       0.023438       1.40625
+   15    [((top, low), [south]), ((top, safe), [west, north]), ((top, low), [east])]     60       0.023438       1.40625
+   16   [((top, low), [south]), ((top, safe), [west]), ((low, safe), [east, north])]     20       0.031250       0.62500
+   17    [((top, low), [south]), ((top, safe), [west]), ((top, low), [east, north])]     20       0.023438       0.46875
+   18   [((top, low), [south]), ((top, safe), [west]), ((top, safe), [east, north])]     20       0.023438       0.46875
+   19   [((top, safe), [south, east]), ((top, low), [west]), ((low, safe), [north])]     80       0.031250       2.50000
+   20                   [((top, safe), [south, west]), ((low, safe), [east, north])]      0       0.031250       0.00000
+   21                    [((top, safe), [south, west]), ((top, low), [east, north])]      0       0.023438       0.00000
+   22   [((top, safe), [south, west]), ((top, low), [east]), ((low, safe), [north])]     20       0.031250       0.62500
+   23   [((top, safe), [south, west]), ((top, low), [east]), ((top, safe), [north])]     20       0.023438       0.46875
+   24                   [((top, safe), [south, west]), ((top, safe), [east, north])]      0       0.023438       0.00000
+   25  [((top, safe), [south, west]), ((top, safe), [east]), ((low, safe), [north])]     20       0.031250       0.62500
+   26   [((top, safe), [south, west]), ((top, safe), [east]), ((top, low), [north])]     20       0.023438       0.46875
+   27   [((top, safe), [south]), ((top, low), [west, east]), ((low, safe), [north])]     60       0.031250       1.87500
+   28   [((top, safe), [south]), ((top, low), [west, east]), ((top, safe), [north])]     60       0.023438       1.40625
+   29   [((top, safe), [south]), ((top, low), [west, north]), ((top, safe), [east])]     60       0.023438       1.40625
+   30   [((top, safe), [south]), ((top, low), [west]), ((low, safe), [east, north])]     20       0.031250       0.62500
+   31    [((top, safe), [south]), ((top, low), [west]), ((top, low), [east, north])]     20       0.023438       0.46875
+   32   [((top, safe), [south]), ((top, low), [west]), ((top, safe), [east, north])]     20       0.023438       0.46875
    ```
-  This indicate that changing the labelling of ``thermostatStatus`` and ``actuationCommands`` to the label ``low`` is possible to partition the application and the eligibile partitioning is given by ``Partitioning``.
+   Finally, all the expected costs are aggregated to give the expected cost of a partitioning.
+   ```
+   The expected cost is 67.5
+   ```
