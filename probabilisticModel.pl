@@ -11,7 +11,7 @@ dif(A,B):- A\=B.
 
 %0.5::tagChange(data1,top);0.5::tagChange(data1,low).
 0.5::tagChange(data2,top);0.5::tagChange(data2,low).
-%0.5::tagChange(data3,top);0.5::tagChange(data3,low).
+0.5::tagChange(data3,top);0.5::tagChange(data3,low).
 0.5::tagChange(data4,top);0.5::tagChange(data4,low).
 0.5::tagChange(data5,top);0.5::tagChange(data5,low).
 %0.5::tagChange(data6,top);0.5::tagChange(data6,low).

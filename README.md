@@ -1,13 +1,13 @@
 
 
 <p><img align="left" width="100"> <h1>Probabilistic SKnife</h1></p>
-Probabilstic SKnife (ProbSKnife) is a declarative prototype to evaluate the expected cost of a partitioning expecting to change the initial labelling. For every possible labelling it calculates:
+Probabilistic SKnife (ProbSKnife) is a declarative prototype to evaluate the expected cost of a partitioning expecting to change the initial labelling. For every possible labelling _i_ it calculates:
 
-1. The probability of changing to the labelling
+1. The probability of changing to the labelling _i_
 
-2. The eligible partitionings that satisfy the labelling with the cost of migration from the starting partitionings
+2. The eligible partitionings that satisfy the labelling _i_ with the cost of migration from the starting partitionings
 
-To calculate the expected cost, **ProbSKnife** is launched from a Python script that parse the results, groups them by the labelling minimum and aggregates by eligible partionings.
+To calculate the expected cost, **ProbSKnife** is launched from a Python script that parses the results, groups them by the labelling minimum and aggregates by eligible partionings.
 
 <br></br>
 ## Prerequisites
@@ -15,17 +15,36 @@ To calculate the expected cost, **ProbSKnife** is launched from a Python script 
 Before using **ProbSKnife** You need to install [ProbLog2](https://dtai.cs.kuleuven.be/problog/index.html) and Python.
 ## Tutorial
 
-To try **ProbSKnife**:
+To try **ProbSKnife** with our predefined example:
 
 1. Download or clone this repository.
 
-2. Open a terminal in the project folder and run `python  .\main.py StartingPartitioning`.
+2. Open a terminal in the project folder and run `python  .\main.py StartingPartitioning DLimit [-l]`
 
-   E.g. ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]'```
+   `StartingPartitioning` is a string representing the partitioning to which evaluate the expected cost, `DLimit` is the limit of the domains admitted for future partitionings and `-l` is an optional argument to have the output partitionings table annotated by labellings or not.
 
-3. The output is a table that resumes every reachable partitioning with its cost, its probability to be reached and the expected cost to reach it from the starting labelling.
+   E.g. ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3```
 
-   E.g. for the starting partitioning ```[((top, safe), [south, west]), ((top, safe), [east, north])]```
+3. A) The first output is a table that resumes every reachable partitioning with its cost, its probability to be reached. Then, the expected cost of the starting partitioning is printed. Finally, the probability to have not satisfied labelling is printed, this is different from zero if the `DLimit` is too low.
+
+   E.g. executing ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3 -l``` results in
+   ```
+                           partitionings  costs  probabilities 
+   0    [[south, west], [east, north]]      0       0.281250
+   1  [[south], [west], [east, north]]     20       0.343750
+   2  [[north, south], [west], [east]]     80       0.031250
+   3  [[south, west], [east], [north]]     20       0.156250
+   4  [[south], [north, west], [east]]     60       0.078125
+   5  [[east, south], [west], [north]]     80       0.031250
+   6  [[south], [east, west], [north]]     60       0.078125
+   
+   The expected cost is 24.375
+   The probability to have a labelling not satisfiable with the set limit is 0.0
+   ```
+
+3. B) Activating the argument `-l` the overall results are the same, what changes is the output table view: now the reachable partitionings are annotated with labels for every domain.
+ 
+   E.g. executing ```python  .\main.py [((top, safe), [south, west]), ((top, safe), [east, north])] 3 -l``` results in
    ```
                                                                          partitionings  costs  probabilities 
    0                    [((low, safe), [south, west]), ((low, safe), [east, north])]      0       0.125000
@@ -61,8 +80,10 @@ To try **ProbSKnife**:
    30   [((top, safe), [south]), ((top, low), [west]), ((low, safe), [east, north])]     20       0.031250
    31    [((top, safe), [south]), ((top, low), [west]), ((top, low), [east, north])]     20       0.023438
    32   [((top, safe), [south]), ((top, low), [west]), ((top, safe), [east, north])]     20       0.023438
-      ```
-   Finally, all the expected costs are aggregated to give the expected cost of a partitioning.
+   
+   The expected cost is 24.375
+   The probability to have a labelling not satisfiable with the set limit is 0.0
    ```
-   The expected cost is 23.125
-   ```
+Note that the tables of 3(A) and 3(B) show the same results, in the first table the partitionings with the same domains are aggregated.
+
+Note 2: The expected cost is not calculated on the tables, but on the minimum cost for every labelling change. The minimum could be not unique and this result in making the sum of the probabilities of the tables greater than 1.

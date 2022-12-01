@@ -14,12 +14,13 @@
 
 
 %Cost of the partitioning P0 = (Domains number, Partitioning to reach, min cost)
-partitioningCost(P0,AppId,DataCharList,DLimit,(Dn,Pmin,Cmin)):-
+partitioningCost(P0,AppId,DLimit,(Dn,Pmin,Cmin)):-
     domainNumber(P0,Dn),
-    futureCost(P0,AppId,DataCharList,DLimit,(Pmin,Cmin)).
+    futureCost(P0,AppId,DLimit,(Pmin,Cmin)).
 
 %Future cost C from P0 to Pi
-futureCost(P0,AppId,DataCharList,DLimit,(Labelling,Pi,C)):-
+futureCost(P0,AppId,DLimit,(Labelling,Pi,C)):-
+    dataCharList(DataCharList),
     labelling(DataCharList,Labelling),
     sKnife(AppId,Labelling,DLimit,Pi),
     cost(P0,Pi,C).
