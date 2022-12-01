@@ -27,7 +27,7 @@ To try **ProbSKnife** with our predefined example:
 
 3. A) The first output is a table that resumes every reachable partitioning with its cost, its probability to be reached. Then, the expected cost of the starting partitioning is printed. Finally, the probability to have not satisfied labelling is printed, this is different from zero if the `DLimit` is too low.
 
-   E.g. executing ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3 -l``` results in
+   E.g. executing ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3``` results in
    ```
                            partitionings  costs  probabilities 
    0    [[south, west], [east, north]]      0       0.281250
