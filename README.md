@@ -19,15 +19,15 @@ To try **ProbSKnife** with our predefined example:
 
 1. Download or clone this repository.
 
-2. Open a terminal in the project folder and run `python  .\main.py StartingPartitioning DLimit [-l]`
+2. Open a terminal in the project folder and run `python  main.py StartingPartitioning DLimit [-l]`
 
    `StartingPartitioning` is a string representing the partitioning to which evaluate the expected cost, `DLimit` is the limit of the domains admitted for future partitionings and `-l` is an optional argument to have the output partitionings table annotated by labellings or not.
 
-   E.g. ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3```
+   E.g. ```python  main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3```
 
 3. A) The first output is a table that resumes every reachable partitioning with its cost, its probability to be reached. Then, the expected cost of the starting partitioning is printed. Finally, the probability to have not satisfied labelling is printed, this is different from zero if the `DLimit` is too low.
 
-   E.g. executing ```python  .\main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3 -l``` results in
+   E.g. executing ```python  main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3 -l``` results in
    ```
                            partitionings  costs  probabilities 
    0    [[south, west], [east, north]]      0       0.281250
@@ -44,7 +44,7 @@ To try **ProbSKnife** with our predefined example:
 
 3. B) Activating the argument `-l` the overall results are the same, what changes is the output table view: now the reachable partitionings are annotated with labels for every domain.
  
-   E.g. executing ```python  .\main.py [((top, safe), [south, west]), ((top, safe), [east, north])] 3 -l``` results in
+   E.g. executing ```python  main.py [((top, safe), [south, west]), ((top, safe), [east, north])] 3 -l``` results in
    ```
                                                                          partitionings  costs  probabilities 
    0                    [((low, safe), [south, west]), ((low, safe), [east, north])]      0       0.125000
