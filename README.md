@@ -1,13 +1,13 @@
 
 
 <p><img align="left" width="100"> <h1>Probabilistic SKnife</h1></p>
-Probabilistic SKnife (ProbSKnife) is a declarative prototype to evaluate the expected cost of a partitioning expecting to change the initial labelling. For every possible labelling _i_ it calculates:
+Probabilistic SKnife (ProbSKnife) is a declarative prototype to evaluate the expected cost of a partitioning expecting to change the initial labelling. For every possible labelling <em>i</em> it calculates:
 
 1. The probability of changing to the labelling _i_
 
 2. The eligible partitionings that satisfy the labelling _i_ with the cost of migration from the starting partitionings
 
-To calculate the expected cost, **ProbSKnife** is launched from a Python script that parses the results, groups them by the labelling minimum and aggregates by eligible partionings.
+To calculate the expected cost, **ProbSKnife** is launched from a Python script that parses the results, groups them by the labelling, considers the minimum cost to satsify each labelling, and aggregates by eligible partionings.
 
 <br></br>
 ## Prerequisites
@@ -29,7 +29,7 @@ To try **ProbSKnife** with our predefined example:
 
    E.g. executing ```python  main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3 -l``` results in
    ```
-                           partitionings  costs  probabilities 
+                           partitioning   cost   probability
    0    [[south, west], [east, north]]      0       0.281250
    1  [[south], [west], [east, north]]     20       0.343750
    2  [[north, south], [west], [east]]     80       0.031250
@@ -46,7 +46,7 @@ To try **ProbSKnife** with our predefined example:
  
    E.g. executing ```python  main.py [((top, safe), [south, west]), ((top, safe), [east, north])] 3 -l``` results in
    ```
-                                                                         partitionings  costs  probabilities 
+                                                                       partitioning     cost     probability
    0                    [((low, safe), [south, west]), ((low, safe), [east, north])]      0       0.125000
    1                     [((low, safe), [south, west]), ((top, low), [east, north])]      0       0.031250
    2    [((low, safe), [south, west]), ((top, low), [east]), ((top, safe), [north])]     20       0.031250
