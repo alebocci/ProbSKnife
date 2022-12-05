@@ -38,8 +38,13 @@ class Partitioning:
         return hash(self.domains)
 
 def checkArgs():
-    usage = 'Usage: "main.py [-d DLIMIT] [-k CHANGELIMIT] [-t] [-l]"\n\tDLIMIT\t\tan integer\n\tCHANGELIMIT\tan integer\n\t-t\t\tshow tables\n\t-l\t\tshow partitioning labels (impacts on groupby in table)'
+    usage = 'Usage: "main.py [-d DLIMIT] [-k CHANGELIMIT] [-t] [-l] [-h]"\n\tDLIMIT\t\tan integer\n\tCHANGELIMIT\tan integer\n\t-t\t\tshow tables\n\t-l\t\tshow partitioning labels (impacts on groupby in table)\n\t-h\t\tshows this help'
     args = sys.argv[1:]
+
+    #print help
+    if('-h' in args):
+        print(usage)
+        exit()
 
     #Without limit the query as 'inf' as upper bound for partioning dimension
     Dlimit='inf'
@@ -190,17 +195,17 @@ def queryExpectedCostP(queryString,labellingString,labellingsP):
             parts.append(Partitioning(parsed[2]))
         costs.append(parsed[3])
         probs.append(parsed[4])
-    return {'labs':labs, 'parts':parts, 'costs':costs, 'probs':probs}
+    return {'labs':labs, 'parts':parts, 'cost':costs, 'probs':probs}
 
 def buildResults(parsedOutput):
     df = pd.DataFrame()
-    df['labellings'] =parsedOutput['labs']
-    df['partitionings']= parsedOutput['parts']
-    df['costs']= parsedOutput['costs']
-    df['probabilities']= parsedOutput['probs']
+    df['labelling'] =parsedOutput['labs']
+    df['partitioning']= parsedOutput['parts']
+    df['cost']= parsedOutput['cost']
+    df['probability']= parsedOutput['probs']
 
     #groping by labelling to find minimum partitionings
-    minGroup = df.groupby(['labellings']).costs.min()
+    minGroup = df.groupby(['labelling']).cost.min()
     minGroup = minGroup.reset_index()
 
     #filter out every row without min cost per labelling
@@ -211,14 +216,14 @@ def buildResults(parsedOutput):
 
 
     #grouping by partitioning for the final table
-    sumProb = minFilter.groupby(['partitionings','costs']).probabilities.sum()
+    sumProb = minFilter.groupby(['partitioning','cost']).probability.sum()
     sumProb = sumProb.reset_index()
 
     #calculating expected cost considering only the minimum cost per labelling
-    exp = minFilter.drop_duplicates(subset=['labellings','costs','probabilities']).reset_index()
-    expectedCost = round((exp['costs'] * exp['probabilities']).sum(),12)
+    exp = minFilter.drop_duplicates(subset=['labelling','cost','probability']).reset_index()
+    expectedCost = round((exp['cost'] * exp['probability']).sum(),12)
     #if limit is too low there are not satisfiable labellings, this is their aggregate probability
-    impossible = round(exp['probabilities'].sum(),7)
+    impossible = round(exp['probability'].sum(),7)
 
     return (sumProb,expectedCost,impossible)
 
@@ -233,4 +238,4 @@ def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP):
     print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+').\tImpossible prob: '+str(1-impossible))
     if(verbose):
         print('All the reachable partitionings with cost and probability are:')
-        print(sumProb.to_string())
+        print(sumProb.to_string()+'\n')
