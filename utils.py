@@ -110,7 +110,7 @@ def queryLabellings(queryString,K):
     s=s.replace('\t', '')
     s=s.replace(' ', '')
     lines = s.splitlines()
-
+    
     labellings = []
     for line in lines :
         parsed = parse(format_output1, line)
@@ -153,6 +153,11 @@ def queryAllPartitionings(appId,queryString,StartingLabelling,Dlimit):
     s=s.replace('\t', '')
     s=s.replace(' ', '')
     lines = s.splitlines()
+
+    if(lines[0]=='sKnife('+appId+','+StartingLabelling+','+Dlimit+',X2):0'):
+        print('No partitioning available with issued K and DLimit.')
+        exit()
+
     partitionings = []
     for line in lines:
         parsed = parse(format_string_output, line)
