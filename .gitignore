@@ -1,3 +1,4 @@
 query.pl
 *.txt
 *.bat
+__pycache__/
