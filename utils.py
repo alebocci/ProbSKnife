@@ -134,7 +134,8 @@ def queryLabellings(queryString,K):
     for (l,p) in labellings:
         pl = round(p * (1 - Labelling0[1]) / denominator,11)
         sump+=pl
-        labellingString+=str(pl)+'::labelling0L('+l+').\n'
+        plString =f'{pl:.11f}'
+        labellingString+=plString+'::labelling0L('+l+').\n'
     #String with probabilistic predicates for writing to file
     labellingString += str(1-sump)+'::labelling0L('+Labelling0[0]+').\n'
 
