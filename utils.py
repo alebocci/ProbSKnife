@@ -3,6 +3,7 @@ import os
 import subprocess
 import pandas as pd
 from parse import *
+from datetime import datetime
 
 class Partitioning:
     def __init__(self, pstring):
@@ -38,8 +39,14 @@ class Partitioning:
         return hash(self.domains)
 
 def checkArgs():
-    usage = 'Usage: "main.py [-d DLIMIT] [-k CHANGELIMIT] [-t] [-l] [-h]"\n\tDLIMIT\t\tan integer\n\tCHANGELIMIT\tan integer\n\t-t\t\tshow tables\n\t-l\t\tshow partitioning labels (impacts on groupby in table)\n\t-h\t\tshows this help'
+    usage = 'Usage: "main.py APPID [-d DLIMIT] [-k CHANGELIMIT] [-f] [-l] [-h]"\n\tAPPID\t\tidentifier of the application to partition\n\tDLIMIT\t\tan integer\n\tCHANGELIMIT\tan integer\n\t-f\t\tshows full results in tables\n\t-l\t\tshows partitioning labels (impacts on groupby in table)\n\t-t\t\tshows timestamp of operations\n\t-h\t\tshows this help'
     args = sys.argv[1:]
+
+    if(len(args)<1):
+        print(usage)
+        exit()
+    
+    appId=args[0]
 
     #print help
     if('-h' in args):
@@ -72,12 +79,15 @@ def checkArgs():
     #Check for show tables argument and labelling of partitionings argument
     tables = False
     labellingsP = False
-    if('-t' in args):
+    timestamp = False
+    if('-f' in args):
         tables = True
     if('-l' in args):
         labellingsP = True
+    if('-t' in args):
+        timestamp = True
     
-    return (Dlimit,K,tables,labellingsP)
+    return (appId,Dlimit,K,tables,labellingsP,timestamp)
 
 def queryLabellings(queryString,K):
     ######## FIRST QUERY
@@ -94,7 +104,7 @@ def queryLabellings(queryString,K):
     os.remove('query.pl')
 
     #Parse first query output
-    format_output1 = 'labellingK('+K+',{},{:d}):{:f}'
+    format_output1 = 'labellingK('+K+',{},{:d}):{}'
 
     s=str(output1.stdout,'utf-8')
     s=s.replace('\t', '')
@@ -110,9 +120,9 @@ def queryLabellings(queryString,K):
             print('Something went wrong, check the Problog model.')
             exit()
         if(parsed[1]==0):
-            Labelling0 = ((parsed[0],parsed[2]))
+            Labelling0 = ((parsed[0],float(parsed[2])))
         else:
-            labellings.append((parsed[0],parsed[2]))
+            labellings.append((parsed[0],float(parsed[2])))
 
     #Calculating change labelling probabilities
     denominator = 0.0
@@ -130,14 +140,14 @@ def queryLabellings(queryString,K):
 
     return (labellingString,Labelling0[0])
 
-def queryAllPartitionings(queryString,StartingLabelling,Dlimit):
+def queryAllPartitionings(appId,queryString,StartingLabelling,Dlimit):
     with open('query.pl', 'w') as f:
         f.write(queryString)
     
     output = subprocess.run(['python', '-m','problog','mainPr.pl','query.pl','--combine'], stdout=subprocess.PIPE)
     
     os.remove('query.pl')
-    format_string_output = ('sKnife(smallExample,'+StartingLabelling+','+Dlimit+',{}):{}').replace(' ','')
+    format_string_output = ('sKnife('+appId+','+StartingLabelling+','+Dlimit+',[{}]):{}').replace(' ','')
 
     s=str(output.stdout,'utf-8')
     s=s.replace('\t', '')
@@ -151,7 +161,7 @@ def queryAllPartitionings(queryString,StartingLabelling,Dlimit):
             print(s)
             print('Something went wrong, check the Problog model.')
             exit()
-        partitionings.append(parsed[0])
+        partitionings.append('['+parsed[0]+']')
     return partitionings
 
 def queryExpectedCostP(queryString,labellingString,labellingsP):
@@ -169,7 +179,7 @@ def queryExpectedCostP(queryString,labellingString,labellingsP):
     os.remove('query.pl')
 
     #Second output parse
-    format_string_output = '{},([{}],[{}],{:d})):{:f}'
+    format_string_output = '{},([{}],[{}],{:d})):{}'
 
     s=str(output.stdout,'utf-8')
     s=s.replace('\t', '')
@@ -194,7 +204,7 @@ def queryExpectedCostP(queryString,labellingString,labellingsP):
         else:
             parts.append(Partitioning(parsed[2]))
         costs.append(parsed[3])
-        probs.append(parsed[4])
+        probs.append(float(parsed[4]))
     return {'labs':labs, 'parts':parts, 'cost':costs, 'probs':probs}
 
 def buildResults(parsedOutput):
@@ -227,7 +237,7 @@ def buildResults(parsedOutput):
 
     return (sumProb,expectedCost,impossible)
 
-def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP):
+def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP,Timestamp,start):
     Pstring = Pstring[1:-1]
     p = Partitioning(Pstring)
     ndomains = len(p.domains)
@@ -239,3 +249,5 @@ def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP):
     if(verbose):
         print('All the reachable partitionings with cost and probability are:')
         print(sumProb.to_string()+'\n')
+    if(Timestamp):
+        print('Time from execution start: '+str(datetime.now()-start))

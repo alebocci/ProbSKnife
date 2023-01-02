@@ -7,7 +7,7 @@ Probabilistic SKnife (ProbSKnife) is a declarative prototype to evaluate the exp
 
 2. The eligible partitionings that satisfy the labelling _i_ with the cost of migration from the starting partitionings
 
-To calculate the expected cost, **ProbSKnife** is launched from a Python script that parses the results, groups them by the labelling, considers the minimum cost to satsify each labelling, and aggregates by eligible partionings.
+To calculate the expected cost for all the eligible partitionings, **ProbSKnife** is launched from a Python script that parses the results, groups them by the labelling, considers the minimum cost to satsify each labelling, and aggregates by eligible partionings. The result is the list of all eligible partitionings with the cost represented as a pair (number of domains, expected cost).
 
 <br></br>
 ## Prerequisites
@@ -19,15 +19,26 @@ To try **ProbSKnife** with our predefined example:
 
 1. Download or clone this repository.
 
-2. Open a terminal in the project folder and run `python  main.py StartingPartitioning DLimit [-l]`
+2. Open a terminal in the project folder and run `python  main.py -h` to have the usage of ProbSKnife
+   ```
+   main.py [-d DLIMIT] [-k CHANGELIMIT] [-t] [-l] [-h]
+        DLIMIT          an integer representing the number of domain maximum for the partitionings (default = unbounded)
+        CHANGELIMIT     an integer representing the maximum number of changes admitted from the starting labelling
+        -t              shows for every partitioning a table with the reachable partitionings with costs and probabilities
+        -l              show partitioning labels (impacts on groupby in table)
+        -h              shows this help
+   ```
 
-   `StartingPartitioning` is a string representing the partitioning to which evaluate the expected cost, `DLimit` is the limit of the domains admitted for future partitionings and `-l` is an optional argument to have the output partitionings table annotated by labellings or not.
+For example, running `python  main.py -k 1 -d 3` calculates the costs for the partitionings with at most **3** domains and considering the change of labelling with at most **1** label change.
 
-   E.g. ```python  main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3```
+The output of such execution is
+```
 
-3. A) The first output is a table that resumes every reachable partitioning with its cost, its probability to be reached. Then, the expected cost of the starting partitioning is printed. Finally, the probability to have not satisfied labelling is printed, this is different from zero if the `DLimit` is too low.
+```
 
-   E.g. executing ```python  main.py '[((top, safe), [south, west]), ((top, safe), [east, north])]' 3 -l``` results in
+The first output is a table that resumes every reachable partitioning with its cost, its probability to be reached. Then, the expected cost of the starting partitioning is printed. Finally, the probability to have not satisfied labelling is printed, this is different from zero if the `DLimit` is too low.
+
+   E.g. executing ````python  main.py -k 1```` results in
    ```
                            partitioning   cost   probability
    0    [[south, west], [east, north]]      0       0.281250

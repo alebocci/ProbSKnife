@@ -1,5 +1,4 @@
 :- use_module(library(lists)).
-:- consult('smallModel.pl').
 :- consult('utils.pl').
 :- consult('sknife.pl').
 :- consult('probabilisticModel.pl').
@@ -37,10 +36,13 @@ links(P,L):- links(P,[],L).
 
 %from two lists of links sum cost of different ones
 linksCost([(S1,S2,C,St1)|Slinks],NewLinks,Cost):-
-    \+ member((S1,S2,C,St1),NewLinks),
+    \+ member((S1,S2,C,St1),NewLinks), \+ member((S2,S1,C,St1),NewLinks),
     linksCost(Slinks,NewLinks,SubCost),
     Cost is C + SubCost.
 linksCost([(S1,S2,C,St1)|Slinks],NewLinks,SubCost):-
     member((S1,S2,C,St1),NewLinks),
+    linksCost(Slinks,NewLinks,SubCost).
+linksCost([(S1,S2,C,St1)|Slinks],NewLinks,SubCost):-
+    member((S2,S1,C,St1),NewLinks),
     linksCost(Slinks,NewLinks,SubCost).
 linksCost([],_,0).
