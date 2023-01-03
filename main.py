@@ -12,11 +12,17 @@ consultString=':- consult(\''+appId+'.pl\').'
 queryLabellingsString = 'query(labellingK('+K+',L,D)).'
 fileString = consultString+'\n'+queryLabellingsString
 
-(labellingsPredicates,StartingLabelling) = queryLabellings(fileString,K)
+(labellingFile,Already) = queryLabellings(appId,fileString,K)
 
 if(timestamp):
-    print('Labelling created at: '+str(datetime.now()-start)+'\n')
-    print('Search for all eligible partitionings.')
+    if(not Already):
+        print('Labelling created at: '+str(datetime.now()-start)+'\n')
+        print('Search for all eligible partitionings.')
+    else:
+        print('Labelling created before.\n')
+        print('Search for all eligible partitionings.')
+
+StartingLabelling = queryStartingLabelling(appId)
 
 queryAllPString = 'query(sKnife('+appId+','+StartingLabelling+','+Dlimit+',Pi)).'
 fileString = consultString+'\n'+queryAllPString
@@ -29,7 +35,7 @@ if(timestamp):
 for p in partitionigs:
     queryStringP = 'query(futureCost('+p+','+appId+','+Dlimit+',RES)).'
     fileString = consultString+'\n'+queryStringP
-    parsedOutput = queryExpectedCostP(fileString,labellingsPredicates,labellingsP)
+    parsedOutput = queryExpectedCostP(fileString,labellingFile,labellingsP)
 
     (sumProb,expectedCost,impossible)=buildResults(parsedOutput)
 

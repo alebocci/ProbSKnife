@@ -2,3 +2,4 @@ query.pl
 *.txt
 *.bat
 __pycache__/
+labellingK*.pl

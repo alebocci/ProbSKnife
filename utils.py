@@ -89,10 +89,15 @@ def checkArgs():
     
     return (appId,Dlimit,K,tables,labellingsP,timestamp)
 
-def queryLabellings(queryString,K):
+def queryLabellings(appId,queryString,K):
     ######## FIRST QUERY
     #Query string for labelling probabilities
     
+    labellingsFile='labellingK'+K+'_'+appId+'.pl'
+    if(os.path.isfile(labellingsFile)):
+        return (labellingsFile, True)
+
+
     #Write query string in file query.pl
     with open('query.pl', 'w') as f:
         f.write(queryString)
@@ -140,7 +145,40 @@ def queryLabellings(queryString,K):
     #String with probabilistic predicates for writing to file
     labellingString += str(1-sump)+'::labelling0L('+Labelling0[0]+').\n'
 
-    return (labellingString,Labelling0[0])
+    with open(labellingsFile, 'w') as f:
+        f.write(labellingString)
+
+
+    return (labellingsFile,False)
+
+def queryStartingLabelling(appId):
+    appIdFile = appId+'.pl'
+
+    with open('query.pl', 'w') as f:
+        f.write('query(startingLabelling(S)).')
+
+    output = subprocess.run(['python', '-m','problog',appIdFile,'query.pl','--combine'], stdout=subprocess.PIPE)
+    
+    os.remove('query.pl')
+    format_string_output = 'startingLabelling([{}]){}'.replace(' ','')
+
+    s=str(output.stdout,'utf-8')
+    s=s.replace('\t', '')
+    s=s.replace(' ', '')
+    lines = s.splitlines()
+
+    line = lines[0]
+
+    parsed = parse(format_string_output, line)
+    if(parsed is None):
+    #parsing problem, probably output error from problog
+        print('Query to startingLabelling')
+        print(s)
+        print('Something went wrong, check the Problog model.')
+        exit()
+    return '['+parsed[0]+']'
+
+
 
 def queryAllPartitionings(appId,queryString,StartingLabelling,Dlimit):
     with open('query.pl', 'w') as f:
@@ -165,23 +203,24 @@ def queryAllPartitionings(appId,queryString,StartingLabelling,Dlimit):
         parsed = parse(format_string_output, line)
         if(parsed is None):
             #parsing problem, probably output error from problog
+            print('Query for all partitionings')
             print(s)
             print('Something went wrong, check the Problog model.')
             exit()
         partitionings.append('['+parsed[0]+']')
     return partitionings
 
-def queryExpectedCostP(queryString,labellingString,labellingsP):
+def queryExpectedCostP(queryString,labellingsFile,labellingsP):
     ######## SECOND QUERY + Probabilistic predicates
     
 
     #Write query string in file query.pl
     with open('query.pl', 'w') as f:
-        f.write(labellingString)
+        #f.write(labellingString)
         f.write(queryString)
 
     #Running problog program with second query
-    output = subprocess.run(['python', '-m','problog','mainPr.pl','query.pl','--combine'], stdout=subprocess.PIPE)
+    output = subprocess.run(['python', '-m','problog','mainPr.pl',labellingsFile,'query.pl','--combine'], stdout=subprocess.PIPE)
     #removing the query file
     os.remove('query.pl')
 
