@@ -168,7 +168,7 @@ def queryLabellings(appId,startingLabelling,K):
 
         consultString = 'consult(\''+appId+'.pl\').'
         
-        output = subprocess.run(['swipl', '-s','mainPr.pl','-g','set_prolog_flag(stack_limit, 25_000_000_000)','-g',consultString,'-g',queryString,'-t','halt'], stdout=subprocess.PIPE)
+        output = subprocess.run(['swipl', '-s','mainPr.pl','-g','set_prolog_stack(global, limit(25 000 000 000)).','-g',consultString,'-g',queryString,'-t','halt'], stdout=subprocess.PIPE)
                 
         s=str(output.stdout,'utf-8')
         s=s.replace('\t', '')
