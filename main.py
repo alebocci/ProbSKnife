@@ -4,15 +4,16 @@ from datetime import datetime
 #Arguments check
 (appId,Dlimit,K,tables,labellingsP,timestamp) = checkArgs()
 
-start = datetime.now()
 if(timestamp):
     print('Starting execution.')
-    print('Creating labelling probabilities.')
-consultString=':- consult(\''+appId+'.pl\').'
-queryLabellingsString = 'query(labellingK('+K+',L,D)).'
-fileString = consultString+'\n'+queryLabellingsString
+    print('Retrieving application information.')
+start = datetime.now()
 
-(labellingFile,Already) = queryLabellings(appId,fileString,K)
+(StartingLabelling,Dlimit,K)=checkApp(appId,K,Dlimit)
+
+if(timestamp):
+    print('Starting to create labelling probabilities at:'+str(datetime.now()-start)+'\n')
+(labellings,Already) = queryLabellings(appId,StartingLabelling,K)
 
 if(timestamp):
     if(not Already):
@@ -22,21 +23,34 @@ if(timestamp):
         print('Labelling created before.\n')
         print('Search for all eligible partitionings.')
 
-StartingLabelling = queryStartingLabelling(appId)
 
-queryAllPString = 'query(sKnife('+appId+','+StartingLabelling+','+Dlimit+',Pi)).'
-fileString = consultString+'\n'+queryAllPString
-partitionigs = queryAllPartitionings(appId,fileString,StartingLabelling,Dlimit)
+partitionings = queryAllPartitionings(appId,StartingLabelling,Dlimit)
 
 if(timestamp):
-    print('All partitioning determined at: '+str(datetime.now()-start)+'\n')
+    print(str(len(partitionings))+' partitionings determined at: '+str(datetime.now()-start)+'\n')
     print('Determining cost for every partitioning.')
 
-for p in partitionigs:
-    queryStringP = 'query(futureCost('+p+','+appId+','+Dlimit+',RES)).'
-    fileString = consultString+'\n'+queryStringP
-    parsedOutput = queryExpectedCostP(fileString,labellingFile,labellingsP)
-
-    (sumProb,expectedCost,impossible)=buildResults(parsedOutput)
-
+for p in partitionings:
+    labs = []
+    parts = []
+    costs = []
+    probs =[]
+    for labelling, prob in labellings:
+        
+        fcs = queryFutureCost(appId,p,labelling,Dlimit)
+        if(fcs is None):
+            continue
+        for (part,cost) in fcs:
+            
+            labs.append(labelling)
+            if(labellingsP):
+                parts.append(part)
+            else:
+                parts.append(Partitioning(part))
+            costs.append(cost)
+            probs.append(prob)
+    
+    (sumProb,expectedCost,impossible)=buildResults(labs,parts,costs,probs)
     printResults(p,sumProb,expectedCost,impossible,tables,labellingsP,timestamp,start)
+
+

@@ -29,9 +29,9 @@ tag(data1, top).
 tag(data2, top).
 tag(data3, top).
 
-0.7::tagChange(data1,top);0.3::tagChange(data1,low).
-0.2::tagChange(data2,top);0.8::tagChange(data2,low).
-0.6::tagChange(data3,top);0.4::tagChange(data3,low).
-
-dataCharList([data1,data2,data3]).
-startingLabelling([(data1, top), (data2, top), (data3, top)]).
+tagChange(data1,top,0.7).
+tagChange(data1,low,0.3).
+tagChange(data2,top,0.2).
+tagChange(data2,low,0.8).
+tagChange(data3,top,0.6).
+tagChange(data3,low,0.4).

@@ -1,7 +1,6 @@
 :- use_module(library(lists)).
 :- consult('utils.pl').
 :- consult('sknife.pl').
-:- consult('probabilisticModel.pl').
 
 %'dream' predicate to give all the partioning with the cost
 %skplace(AppId, StartingLabelling, DLimit,(P,C)):-
@@ -25,6 +24,10 @@ futureCost(P0,AppId,DLimit,(Labelling,Pi,C)):-
     sKnife(AppId,Labelling,DLimit,Pi),
     cost(P0,Pi,C).
 
+%Min cost e (one of) partitioning from P0 when Labelling
+futureCost(P0,AppId,DLimit,Labelling,Ps):-
+    findall((Pi,C),(sKnife(AppId,Labelling,DLimit,Pi),cost(P0,Pi,C)),Ps).
+
 %C is cost of going from P1 to P2
 cost(P1,P2,C):-
     links(P1,P1Links),
@@ -46,3 +49,27 @@ linksCost([(S1,S2,C,St1)|Slinks],NewLinks,SubCost):-
     member((S2,S1,C,St1),NewLinks),
     linksCost(Slinks,NewLinks,SubCost).
 linksCost([],_,0).
+
+
+%probability of a labelling given K changes from the starting labelling, D is number of different labels (D always <= K)
+labellingK(K,L,D):-
+    dataCharList(Datas),
+    labellingK(Datas,K,L,D).
+
+labellingK([DC|DCs],K,[(DC,L,P)|Labelling],Diff):-
+    labellingK(DCs,K,Labelling,Diff),
+    tagChange(DC,L,P),
+    tag(DC,L).
+labellingK([DC|DCs],K,[(DC,L,P)|Labelling],NewDiff):-
+    labellingK(DCs,K,Labelling,Diff),
+    tagChange(DC,L,P),
+    \+tag(DC,L),
+    NewDiff is Diff + 1,
+    NewDiff =< K.
+labellingK([],_,[],0).
+
+startingLabelling(S):-
+    findall((DC,L),tag(DC,L),S).
+
+dataCharList(DCL):-
+    findall(DC,tag(DC,_),DCL).

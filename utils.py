@@ -3,6 +3,7 @@ import os
 import subprocess
 import pandas as pd
 from parse import *
+from parse import compile
 from datetime import datetime
 
 class Partitioning:
@@ -89,177 +90,197 @@ def checkArgs():
     
     return (appId,Dlimit,K,tables,labellingsP,timestamp)
 
-def queryLabellings(appId,queryString,K):
-    ######## FIRST QUERY
-    #Query string for labelling probabilities
+def checkApp(appId,K,Dlimit):
+    consultFile = appId+'.pl'
+    queryString1 = ' findall(S,software(S,_,_,_,_),Sws), length(Sws,N), write(N).'
+
+    output = subprocess.run(['swipl', '-s', consultFile,'-g',queryString1,'-t','halt'], stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
+               
+    s=str(output.stdout,'utf-8')
+    lines = s.splitlines()
+    if(not lines):
+        print('Something went wrong parsing the model software, check the Prolog model.')
+        exit()
+
+    MaxDlimit = int(lines[0])
+    if(Dlimit=='inf' or int(Dlimit)>MaxDlimit):
+        Dlimit=str(MaxDlimit)
+
     
-    labellingsFile='labellingK'+K+'_'+appId+'.pl'
-    if(os.path.isfile(labellingsFile)):
-        return (labellingsFile, True)
+    queryString2 = 'startingLabelling(S), length(S,N), write(S),write(N).'
+    consultString = 'consult(\''+appId+'.pl\').'
 
-
-    #Write query string in file query.pl
-    with open('query.pl', 'w') as f:
-        f.write(queryString)
-
-    #Running problog program with query
-    output1 = subprocess.run(['python', '-m','problog','mainPr.pl','query.pl','--combine'], stdout=subprocess.PIPE)
-
-    #removing the query file
-    os.remove('query.pl')
-
-    #Parse first query output
-    format_output1 = 'labellingK('+K+',{},{:d}):{}'
-
-    s=str(output1.stdout,'utf-8')
+    output = subprocess.run(['swipl', '-s', 'mainPr.pl','-g',consultString,'-g',queryString2,'-t','halt'], stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
+    
+    s=str(output.stdout,'utf-8')
     s=s.replace('\t', '')
     s=s.replace(' ', '')
     lines = s.splitlines()
-    
-    labellings = []
-    for line in lines :
-        parsed = parse(format_output1, line)
-        if(parsed is None):
-            #parsing problem, probably output error from problog
-            print(s)
-            print('Something went wrong, check the Problog model.')
-            exit()
-        if(parsed[1]==0):
-            Labelling0 = ((parsed[0],float(parsed[2])))
-        else:
-            labellings.append((parsed[0],float(parsed[2])))
+    if(not lines):
+        print('Something went wrong retrieving the starting labelling, check the Prolog model.')
+        exit()
 
-    #Calculating change labelling probabilities
-    denominator = 0.0
-    for (l,p) in labellings:
-        denominator+=p
-    denominator=round(denominator,11)
-    labellingString =''
-    sump=0.0
-    for (l,p) in labellings:
-        pl = round(p * (1 - Labelling0[1]) / denominator,11)
-        if(pl>0.0):
+    res = lines[0]
+    
+    formatString = '[{}]{:d}'
+    parsed = search(formatString, res)
+    if(parsed is None):
+        print(res)
+        #parsing problem, probably output error from prolog
+        print('Something went wrong parsing the starting labelling, check the Prolog model.')
+        exit()
+    
+    MaxK = int(parsed[1])
+    if(K=='inf' or int(K)>MaxK):
+        K=str(MaxK)
+    return (('['+parsed[0]+']',Dlimit,K))
+
+
+def queryLabellings(appId,startingLabelling,K):
+    labellingsFile='labellingK'+K+'_'+appId+'.pl'
+    if(os.path.isfile(labellingsFile)):
+        already = True
+        #labelling probabilities already calculated and printed on file
+        with open(labellingsFile, 'r') as labFile:
+            lines = labFile.readlines()
+            format_output1 = '{}::labelling0L([{}]).\n'
+            labellings = []
+            for line in lines :
+                line = line.replace('\t', '')
+                line = line.replace(' ', '')
+                parsed = parse(format_output1, line)
+                if(parsed is None):
+                    print(line)
+                    #parsing problem, probably output error from prolog
+                    print('Something went wrong parsing the prob labelling file, delete it and retry.')
+                    exit()
+                prob = float(parsed[0])
+                labelling = '['+parsed[1]+']'
+                if(prob>0.0):
+                    if(labelling==startingLabelling):
+                        Labelling0 = ((startingLabelling,prob))
+                    else:
+                        labellings.append((labelling,prob))
+    #calculate labellings and probabilities
+    else:
+        already=False
+        queryString = 'findall((L,D),labellingK('+K+',L,D),Ls), write(Ls).'
+
+        consultString = 'consult(\''+appId+'.pl\').'
+        
+        output = subprocess.run(['swipl', '-s','mainPr.pl','-g','set_prolog_flag(stack_limit, 4_294_967_296)','-g',consultString,'-g',queryString,'-t','halt'], stdout=subprocess.PIPE)
+                
+        s=str(output.stdout,'utf-8')
+        s=s.replace('\t', '')
+        s=s.replace(' ', '')
+        lines = s.splitlines()
+        if(not lines):
+            print('Something went wrong looking for all the labellings, check the Prolog model.')
+            exit()
+
+        res = lines[0]
+
+        formatString = '([{}],{:d})'
+        p = compile('({},{},{})')
+        labellings = []
+        denominator = 0.0
+        for klabelling,distance in findall(formatString,res):
+            labelling='['
+            prob=1.0
+            for (dc,lb,pr) in p.findall(klabelling):
+                labelling+='('+dc+','+lb+'),'
+                prob*=float(pr)
+            if(prob<=0.0):
+                continue
+            labelling = labelling[:-1]+']'
+            if(distance==0):
+                Labelling0=((startingLabelling,prob))
+            else:
+                labellings.append((labelling,prob))
+                denominator+=prob
+
+        denominator=round(denominator,11)
+        #Calculating change labelling probabilities
+        probLabellings=[]
+        labellingString =''
+        sump=0.0
+        for (l,p) in labellings:
+            pl = round(p * (1 - Labelling0[1]) / denominator,11)
             sump+=pl
             plString =f'{pl:.11f}'
             labellingString+=plString+'::labelling0L('+l+').\n'
-    #String with probabilistic predicates for writing to file
-    labellingString += str(1-sump)+'::labelling0L('+Labelling0[0]+').\n'
+            probLabellings.append((l,pl))
+        
+        #Starting labelling probabilities takes the error fro summing all to 1
+        labellingString += str(1-sump)+'::labelling0L('+Labelling0[0]+').\n'
+        probLabellings.append((startingLabelling,(1-sump)))
+        with open(labellingsFile, 'w') as f:
+            f.write(labellingString)
+        labellings=probLabellings
 
-    with open(labellingsFile, 'w') as f:
-        f.write(labellingString)
+    return (labellings,already)
 
-
-    return (labellingsFile,False)
-
-def queryStartingLabelling(appId):
-    appIdFile = appId+'.pl'
-
-    with open('query.pl', 'w') as f:
-        f.write('query(startingLabelling(S)).')
-
-    output = subprocess.run(['python', '-m','problog',appIdFile,'query.pl','--combine'], stdout=subprocess.PIPE)
+def queryAllPartitionings(appId,StartingLabelling,Dlimit):
     
-    os.remove('query.pl')
-    format_string_output = 'startingLabelling([{}]){}'.replace(' ','')
+    queryString = 'findall(Pi,sKnife('+appId+','+StartingLabelling+','+Dlimit+',Pi),Ps), write(Ps).'
 
+    consultString = 'consult(\''+appId+'.pl\').'
+        
+    output = subprocess.run(['swipl', '-s','mainPr.pl','-g',consultString,'-g',queryString,'-t','halt'], stdout=subprocess.PIPE)
+                
     s=str(output.stdout,'utf-8')
     s=s.replace('\t', '')
     s=s.replace(' ', '')
-    lines = s.splitlines()
-
-    line = lines[0]
-
-    parsed = parse(format_string_output, line)
-    if(parsed is None):
-    #parsing problem, probably output error from problog
-        print('Query to startingLabelling')
-        print(s)
-        print('Something went wrong, check the Problog model.')
+    if(s=='[]'):
+        print('No initial partitioning available, change DLimit or check the model.')
         exit()
-    return '['+parsed[0]+']'
-
-
-
-def queryAllPartitionings(appId,queryString,StartingLabelling,Dlimit):
-    with open('query.pl', 'w') as f:
-        f.write(queryString)
-    
-    output = subprocess.run(['python', '-m','problog','mainPr.pl','query.pl','--combine'], stdout=subprocess.PIPE)
-    
-    os.remove('query.pl')
-    format_string_output = ('sKnife('+appId+','+StartingLabelling+','+Dlimit+',[{}]):{}').replace(' ','')
-
-    s=str(output.stdout,'utf-8')
-    s=s.replace('\t', '')
-    s=s.replace(' ', '')
     lines = s.splitlines()
-
-    if(lines[0]=='sKnife('+appId+','+StartingLabelling+','+Dlimit+',X2):0'):
-        print('No partitioning available with issued K and DLimit.')
+    if(not lines):
+        print('Something went wrong looking for all the partitionings, check the Prolog model.')
         exit()
 
-    partitionings = []
-    for line in lines:
-        parsed = parse(format_string_output, line)
-        if(parsed is None):
-            #parsing problem, probably output error from problog
-            print('Query for all partitionings')
-            print(s)
-            print('Something went wrong, check the Problog model.')
-            exit()
-        partitionings.append('['+parsed[0]+']')
+    res = lines[0]
+    
+    formatString='[({}])]'
+    partitionings=[]
+    for parsed in findall(formatString,res):
+        partitioning='[('+parsed[0]+'])]'
+        partitionings.append(partitioning)
     return partitionings
 
-def queryExpectedCostP(queryString,labellingsFile,labellingsP):
-    ######## SECOND QUERY + Probabilistic predicates
-    
+def queryFutureCost(appId,partitioning,labelling,Dlimit):
+    queryStringP = 'futureCost('+partitioning+','+appId+','+Dlimit+','+labelling+',(Ps)), write(Ps).'
 
-    #Write query string in file query.pl
-    with open('query.pl', 'w') as f:
-        #f.write(labellingString)
-        f.write(queryString)
-
-    #Running problog program with second query
-    output = subprocess.run(['python', '-m','problog','mainPr.pl',labellingsFile,'query.pl','--combine'], stdout=subprocess.PIPE)
-    #removing the query file
-    os.remove('query.pl')
-
-    #Second output parse
-    format_string_output = '{},([{}],[{}],{:d})):{}'
-
+    consultString2 = 'consult(\''+appId+'.pl\').'
+        
+    output = subprocess.run(['swipl', '-s','mainPr.pl','-g',consultString2,'-g',queryStringP,'-t','halt'], stdout=subprocess.PIPE)
+               
     s=str(output.stdout,'utf-8')
     s=s.replace('\t', '')
     s=s.replace(' ', '')
+    if(s=='[]'):
+        return None
+
     lines = s.splitlines()
+    if(not lines):
+        return None
+    res = lines[0]
 
-    labs = []
-    parts = []
-    costs = []
-    probs =[]
-    for line in lines :
-        parsed = parse(format_string_output, line)
-        if(parsed is None):
-            #parsing problem, probably output error from problog
-            print(s)
-            print('Something went wrong, check the Problog model.')
-            exit()
-        labs.append(parsed[1])
-        #if -l is active partitionings are strings, else are Partitioning object for group by equal ones
-        if(labellingsP):
-            parts.append(parsed[2])
-        else:
-            parts.append(Partitioning(parsed[2]))
-        costs.append(parsed[3])
-        probs.append(float(parsed[4]))
-    return {'labs':labs, 'parts':parts, 'cost':costs, 'probs':probs}
+    formatString='([({}])],{:d})'
+    result=[]
+    for partitioning, cost in findall(formatString,res):
+        partString='[('+partitioning+'])]'
+        result.append((partString,cost))
+    return result
 
-def buildResults(parsedOutput):
+def buildResults(labs,parts,costs,probs):
     df = pd.DataFrame()
-    df['labelling'] =parsedOutput['labs']
-    df['partitioning']= parsedOutput['parts']
-    df['cost']= parsedOutput['cost']
-    df['probability']= parsedOutput['probs']
-
+   
+    df['labelling'] =labs
+    df['partitioning']= parts
+    df['cost']= costs
+    df['probability']= probs
+    
     #groping by labelling to find minimum partitionings
     minGroup = df.groupby(['labelling']).cost.min()
     minGroup = minGroup.reset_index()
@@ -270,14 +291,14 @@ def buildResults(parsedOutput):
     i2 = minGroup.set_index(keys).index
     minFilter = df[i1.isin(i2)]
 
-
+    
     #grouping by partitioning for the final table
     sumProb = minFilter.groupby(['partitioning','cost']).probability.sum()
     sumProb = sumProb.reset_index()
 
     #calculating expected cost considering only the minimum cost per labelling
     exp = minFilter.drop_duplicates(subset=['labelling','cost','probability']).reset_index()
-    expectedCost = round((exp['cost'] * exp['probability']).sum(),12)
+    expectedCost = round((exp['cost'] * exp['probability']).sum(),10)
     #if limit is too low there are not satisfiable labellings, this is their aggregate probability
     impossible = round(exp['probability'].sum(),7)
 
@@ -291,7 +312,8 @@ def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP,Tim
         printP=Pstring
     else:
         printP=str(p)
-    print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+').\tImpossible prob: '+str(1-impossible))
+    impProb=round(1-impossible,8)
+    print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+').\tImpossible prob: '+str(impProb))
     if(verbose):
         print('All the reachable partitionings with cost and probability are:')
         print(sumProb.to_string()+'\n')

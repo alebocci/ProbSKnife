@@ -46,18 +46,24 @@ tag(data4, top).
 tag(data5, top).
 tag(data6, top).
 
-0.5::tagChange(charact1,top);0.5::tagChange(charact1,low).
-0.5::tagChange(charact2,top);0.5::tagChange(charact2,low).
-0.5::tagChange(charact3,top);0.5::tagChange(charact3,low).
-0.5::tagChange(charact4,top);0.5::tagChange(charact4,low).
+tagChange(charact1,top,0.5).
+tagChange(charact1,low,0.5).
+tagChange(charact2,top,0.5).
+tagChange(charact2,low,0.5).
+tagChange(charact3,top,0.5).
+tagChange(charact3,low,0.5).
+tagChange(charact4,top,0.5).
+tagChange(charact4,low,0.5).
 
-0.5::tagChange(data1,top);0.5::tagChange(data1,low).
-0.5::tagChange(data2,top);0.5::tagChange(data2,low).
-0.5::tagChange(data3,top);0.5::tagChange(data3,low).
-0.5::tagChange(data4,top);0.5::tagChange(data4,low).
-0.5::tagChange(data5,top);0.5::tagChange(data5,low).
-0.5::tagChange(data6,top);0.5::tagChange(data6,low).
-
-
-dataCharList([charact1,charact2,charact3,charact4,data1,data2,data3,data4,data5,data6]).
-startingLabelling([(charact1, top), (charact2, top), (charact3, top), (charact4, top), (data1, top), (data2, top), (data3, top), (data4, top), (data5, top),(data6, top)]).
+tagChange(data1,top,0.5).
+tagChange(data1,low,0.5).
+tagChange(data2,top,0.5).
+tagChange(data2,low,0.5).
+tagChange(data3,top,0.5).
+tagChange(data3,low,0.5).
+tagChange(data4,top,0.5).
+tagChange(data4,low,0.5).
+tagChange(data5,top,0.5).
+tagChange(data5,low,0.5).
+tagChange(data6,top,0.5).
+tagChange(data6,low,0.5).
