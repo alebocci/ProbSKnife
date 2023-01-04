@@ -263,7 +263,9 @@ def queryFutureCost(appId,partitioning,labelling,Dlimit):
 
     lines = s.splitlines()
     if(not lines):
-        return None
+        print(lines)
+        print("Future cost query failed!")
+        exit()
     res = lines[0]
 
     formatString='([({}])],{:d})'
@@ -310,8 +312,8 @@ def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP,Tim
         printP=Pstring
     else:
         printP=str(p)
-    impProb=round(1-impossible,8)
-    print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+').\tImpossible prob: '+str(impProb))
+    
+    print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+').\tImpossible prob: '+str(impossible))
     if(verbose):
         print('All the reachable partitionings with cost and probability are:')
         print(sumProb.to_string()+'\n')
