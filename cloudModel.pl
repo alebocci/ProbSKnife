@@ -49,8 +49,8 @@ software( db,
 software( userConfig2, 
             [userPreferences], %data
             [dataLibrary],% ListOfCharacteristics
-            ([disk],[aiLearning2, appManager, authenticator, db]), %linked components (hw,sw)
             10,
+            ([disk],[aiLearning2, appManager, authenticator, db]) %linked components (hw,sw)
             ).
 software( aiLearning2, 
             [iotMeasurements, userPreferences], 
