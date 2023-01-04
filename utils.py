@@ -299,10 +299,8 @@ def buildResults(labs,parts,costs,probs):
     #calculating expected cost considering only the minimum cost per labelling
     exp = minFilter.drop_duplicates(subset=['labelling','cost','probability']).reset_index()
     expectedCost = round((exp['cost'] * exp['probability']).sum(),10)
-    #if limit is too low there are not satisfiable labellings, this is their aggregate probability
-    impossible = round(exp['probability'].sum(),7)
 
-    return (sumProb,expectedCost,impossible)
+    return (sumProb,expectedCost)
 
 def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP,Timestamp,start):
     Pstring = Pstring[1:-1]

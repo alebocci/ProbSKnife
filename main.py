@@ -35,10 +35,13 @@ for p in partitionings:
     parts = []
     costs = []
     probs =[]
+    impossible=0.0
     for labelling, prob in labellings:
         
         fcs = queryFutureCost(appId,p,labelling,Dlimit)
         if(fcs is None):
+            #probability that labelling is not satifiable
+            impossible+=prob
             continue
         for (part,cost) in fcs:
             
@@ -49,8 +52,7 @@ for p in partitionings:
                 parts.append(Partitioning(part))
             costs.append(cost)
             probs.append(prob)
-    
-    (sumProb,expectedCost,impossible)=buildResults(labs,parts,costs,probs)
+    (sumProb,expectedCost)=buildResults(labs,parts,costs,probs)
     printResults(p,sumProb,expectedCost,impossible,tables,labellingsP,timestamp,start)
 
 
