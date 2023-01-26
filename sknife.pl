@@ -77,7 +77,7 @@ partitioning([(S,TData,TChar)|Ss], Npar,PLimit,Partitions, NewPartitions) :-
 partitioning([],_,_,P,P).
 
 labelC(Labelling,Data, Characteristics, (MaxType,CharactSecType)):-
-    dataLabel(Labelling,Data,Label),
-    highestType(Label,MaxType),
+    dataLabel(Labelling,Data,Labels),
+    highestType(Labels,MaxType),
     characteristicsLabel(Labelling,Characteristics, ListOfCharactTypes),
     lowestType(ListOfCharactTypes, CharactSecType).

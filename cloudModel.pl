@@ -71,12 +71,6 @@ hardware( disk,
             ([],[db]) 
             ).
 
-hardware( disk2, 
-            [cryptedData, userPreferences], 
-            [fromProvider],
-            ([],[db, userConfig2]) 
-            ).
-
 % lattice of security 
 %g_lattice_higherThan(higherElement, lowerElement)
 g_lattice_higherThan(top, medium).

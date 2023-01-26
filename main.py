@@ -2,14 +2,14 @@ from utils import *
 from datetime import datetime
 
 #Arguments check
-(appId,Dlimit,K,tables,labellingsP,timestamp) = checkArgs()
+(appId,DLimit,K,tables,labellingsP,timestamp) = checkArgs()
 
 if(timestamp):
     print('Starting execution.')
     print('Retrieving application information.')
 start = datetime.now()
 
-(StartingLabelling,Dlimit,K)=checkApp(appId,K,Dlimit)
+(StartingLabelling,DLimit,K)=checkApp(appId,K,DLimit)
 
 if(timestamp):
     print('Starting to create labelling probabilities at:'+str(datetime.now()-start)+'\n')
@@ -18,13 +18,12 @@ if(timestamp):
 if(timestamp):
     if(not Already):
         print('Labelling created at: '+str(datetime.now()-start)+'\n')
-        print('Search for all eligible partitionings.')
     else:
         print('Labelling created before.\n')
-        print('Search for all eligible partitionings.')
+    print('Search for all eligible partitionings.')
 
 
-partitionings = queryAllPartitionings(appId,StartingLabelling,Dlimit)
+partitionings = queryAllPartitionings(appId,StartingLabelling,DLimit)
 
 if(timestamp):
     print(str(len(partitionings))+' partitionings determined at: '+str(datetime.now()-start)+'\n')
@@ -38,9 +37,9 @@ for p in partitionings:
     impossible=0.0
     for labelling, prob in labellings:
         
-        fcs = queryFutureCost(appId,p,labelling,Dlimit)
+        fcs = queryFutureCost(appId,p,labelling,DLimit)
         if(fcs is None):
-            #probability that labelling is not satifiable
+            #probability that labelling is not satisfiable
             impossible+=prob
             continue
         for (part,cost) in fcs:
@@ -53,6 +52,7 @@ for p in partitionings:
             costs.append(cost)
             probs.append(prob)
     (sumProb,expectedCost)=buildResults(labs,parts,costs,probs)
-    printResults(p,sumProb,expectedCost,impossible,tables,labellingsP,timestamp,start)
+    printResults(p,sumProb,expectedCost,tables,labellingsP,timestamp,start)
+print('Impossible prob: '+str(impossible))
 
 

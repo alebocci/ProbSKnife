@@ -304,7 +304,7 @@ def buildResults(labs,parts,costs,probs):
 
     return (sumProb,expectedCost)
 
-def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP,Timestamp,start):
+def printResults(Pstring,sumProb,expectedCost,verbose,labellingsP,Timestamp,start):
     Pstring = Pstring[1:-1]
     p = Partitioning(Pstring)
     ndomains = len(p.domains)
@@ -313,7 +313,7 @@ def printResults(Pstring,sumProb,expectedCost,impossible,verbose,labellingsP,Tim
     else:
         printP=str(p)
     
-    print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+').\tImpossible prob: '+str(impossible))
+    print('Partitioning '+printP+'\t\t\tcost: ('+str(ndomains)+', '+str(expectedCost)+')')
     if(verbose):
         print('All the reachable partitionings with cost and probability are:')
         print(sumProb.to_string()+'\n')
